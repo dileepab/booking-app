@@ -1,0 +1,249 @@
+<template>
+  <div class="dashboard-container">
+    <h2 class="dashboard-title">My Bookings</h2>
+
+    <div class="dashboard-tabs">
+      <button
+          :class="{ 'active': activeTab === 'upcoming' }"
+          @click="activeTab = 'upcoming'"
+          class="tab-button"
+      >
+        Upcoming Bookings
+      </button>
+      <button
+          :class="{ 'active': activeTab === 'past' }"
+          @click="activeTab = 'past'"
+          class="tab-button"
+      >
+        Past Bookings
+      </button>
+    </div>
+
+    <div class="bookings-content">
+      <div v-if="loading" class="status-message">Loading your bookings...</div>
+      <div v-if="error" class="status-message error">{{ error }}</div>
+
+      <div v-if="!loading && !error">
+        <!-- Upcoming Bookings -->
+        <div v-show="activeTab === 'upcoming'">
+          <div v-if="upcomingBookings.length === 0" class="no-bookings-message">
+            You have no upcoming bookings.
+            <router-link to="/search" class="button-link">Book a Room</router-link>
+          </div>
+          <div v-else class="booking-list">
+            <div v-for="booking in upcomingBookings" :key="booking.bookingId" class="booking-card">
+              <div class="booking-details">
+                <h3>{{ booking.roomTitle }}</h3>
+                <p><strong>Check-in:</strong> {{ formatDate(booking.checkIn) }}</p>
+                <p><strong>Check-out:</strong> {{ formatDate(booking.checkOut) }}</p>
+                <p><strong>Booking ID:</strong> {{ booking.bookingId }}</p>
+              </div>
+              <div class="booking-actions">
+                <button @click="handleCancel(booking.bookingId)" class="cancel-button">
+                  Cancel Booking
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Past Bookings -->
+        <div v-show="activeTab === 'past'">
+          <div v-if="pastBookings.length === 0" class="no-bookings-message">
+            You have no past bookings.
+          </div>
+          <div v-else class="booking-list">
+            <div v-for="booking in pastBookings" :key="booking.bookingId" class="booking-card past">
+              <div class="booking-details">
+                <h3>{{ booking.roomTitle }}</h3>
+                <p><strong>Check-in:</strong> {{ formatDate(booking.checkIn) }}</p>
+                <p><strong>Check-out:</strong> {{ formatDate(booking.checkOut) }}</p>
+                <p><strong>Booking ID:</strong> {{ booking.bookingId }}</p>
+                <p v-if="booking.status === 'cancelled'" class="status-tag cancelled">Cancelled</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, computed } from 'vue';
+import { getUserBookings, cancelBooking } from '../services/api';
+
+const allBookings = ref([]);
+const loading = ref(true);
+const error = ref(null);
+const activeTab = ref('upcoming');
+
+const upcomingBookings = computed(() =>
+    allBookings.value.filter(b => b.status === 'upcoming').sort((a, b) => new Date(a.checkIn) - new Date(b.checkIn))
+);
+
+const pastBookings = computed(() =>
+    allBookings.value.filter(b => b.status !== 'upcoming').sort((a, b) => new Date(b.checkIn) - new Date(a.checkIn))
+);
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return new Date(dateString).toLocaleDateString('en-SG', options);
+};
+
+const fetchBookings = async () => {
+  try {
+    loading.value = true;
+    allBookings.value = await getUserBookings();
+  } catch (err) {
+    error.value = 'Failed to load bookings.';
+    console.error(err);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const handleCancel = async (bookingId) => {
+  // Optimistic UI update
+  const bookingToCancel = allBookings.value.find(b => b.bookingId === bookingId);
+  if (bookingToCancel) {
+    bookingToCancel.status = 'cancelled';
+  }
+
+  try {
+    await cancelBooking(bookingId);
+    // If API call fails, you might want to revert the status, but for this mock, we assume success.
+  } catch (err) {
+    console.error('Failed to cancel booking:', err);
+    // Revert UI change on error
+    if (bookingToCancel) bookingToCancel.status = 'upcoming';
+    alert('Could not cancel the booking. Please try again.');
+  }
+};
+
+onMounted(fetchBookings);
+</script>
+
+<style scoped>
+.dashboard-container {
+  width: 100%;
+}
+
+.dashboard-title {
+  font-family: var(--font-serif),serif;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 0.5rem;
+  display: inline-block;
+}
+
+.dashboard-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+}
+
+.tab-button {
+  padding: 1rem 1.5rem;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px; /* Aligns with the container's border */
+}
+
+.tab-button.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.status-message {
+  padding: 4rem 1rem;
+  text-align: center;
+  color: #888;
+}
+.status-message.error {
+  color: var(--danger-color);
+}
+
+.no-bookings-message {
+  text-align: center;
+  padding: 3rem;
+  background-color: var(--light-gray);
+}
+
+.button-link {
+  display: inline-block;
+  margin-top: 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.booking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.booking-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.booking-card.past {
+  background-color: #f9f9f9;
+  color: #888;
+}
+
+.booking-details h3 {
+  font-family: var(--font-serif),serif;
+  margin-bottom: 1rem;
+}
+.booking-details p {
+  margin: 0.5rem 0;
+}
+
+.cancel-button {
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+.cancel-button:hover {
+  background-color: var(--danger-color-dark);
+}
+
+.status-tag.cancelled {
+  font-weight: bold;
+  color: var(--danger-color);
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .booking-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .booking-actions {
+    width: 100%;
+  }
+  .cancel-button {
+    width: 100%;
+  }
+}
+</style>

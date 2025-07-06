@@ -1,0 +1,113 @@
+/* src/assets/auth.css */
+
+.auth-form-container {
+    width: 100%;
+    max-width: 550px;
+    margin: 4rem auto;
+    padding: 2rem;
+    text-align: center;
+}
+
+.auth-header h2 {
+    font-family: var(--font-serif), serif ;
+    font-size: 2.5rem;
+    font-weight: 300;
+    margin-bottom: 1rem;
+}
+
+.auth-header h2 strong {
+    font-weight: bold;
+}
+
+.title-separator {
+    height: 3px;
+    width: 150px;
+    background-color: var(--primary-color);
+    margin: 0 auto 2.5rem;
+}
+
+.form-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+    align-items: center;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.form-label {
+    text-align: right;
+    font-weight: 500;
+}
+
+.input-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.input-wrapper input[type="text"],
+.input-wrapper input[type="password"],
+.input-wrapper input[type="email"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    font-size: 1rem;
+    background-color: var(--light-gray);
+}
+
+.error-message {
+    color: #d9534f;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    min-height: 1.25em;
+}
+
+.auth-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.85rem 2rem;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.auth-button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
+.auth-button:hover:not(:disabled) {
+    background-color: #333;
+}
+
+.form-link {
+    margin-top: 1.5rem;
+}
+
+.form-link a {
+    font-weight: bold;
+}
+
+.field-checkbox {
+    grid-column: 2 / 3;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Responsive Styles */
+@media (max-width: 576px) {
+    .form-grid-layout {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    .form-label {
+        text-align: left;
+        margin-bottom: 0.25rem;
+    }
+    .field-checkbox {
+        grid-column: 1 / -1;
+    }
+}

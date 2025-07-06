@@ -1,0 +1,43 @@
+/* General Styles & Resets */
+@import './auth.css';
+
+:root {
+  --font-serif: 'Georgia', 'Times New Roman', Times, serif;
+  --font-sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* New, more sophisticated color palette */
+  --primary-color: #0d47a1; /* A deep, elegant blue */
+  --primary-color-dark: #002171; /* A darker shade for hover states */
+  --secondary-color: #c5a572; /* A warm, golden accent */
+  --text-color: #343a40;      /* A softer, dark grey for text */
+  --light-gray: #f8f9fa;      /* A slightly off-white for backgrounds */
+  --border-color: #dee2e6;      /* A standard light border color */
+  --danger-color: #d32f2f;      /* A more refined red for cancellations and errors */
+  --danger-color-dark: #b71c1c;   /* A darker red for hover states */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body, html {
+  font-family: var(--font-sans), serif;
+  background-color: #ffffff;
+  color: var(--text-color);
+  height: 100%;
+  width: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
