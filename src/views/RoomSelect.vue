@@ -17,20 +17,20 @@
         </div>
       </div>
 
-      <div v-if="loading" class="status-message">Searching for rooms...</div>
+      <div v-if="loading && rooms.length === 0" class="status-message">Searching for rooms...</div>
       <div v-else-if="!loading && rooms.length === 0" class="no-rooms-message">No rooms available for the selected criteria.</div>
 
       <TransitionGroup
-          v-else
-          tag="div"
-          name="room-list-transition"
-          class="room-list"
+        v-else
+        tag="div"
+        name="room-list-transition"
+        class="room-list"
       >
         <div
-            v-for="room in sortedRooms"
-            :key="room.id"
-            class="room-card"
-            v-observe-visibility
+          v-for="room in rooms"
+          :key="room.id"
+          class="room-card"
+          v-observe-visibility
         >
           <img :src="room.image" :alt="room.title" class="room-image" />
           <div class="room-card-content">
@@ -48,30 +48,33 @@
           </div>
         </div>
       </TransitionGroup>
+
+      <div class="pagination-controls" v-if="hasMore">
+        <button @click="loadMoreRooms" :disabled="loading" class="load-more-button">
+          <LoadingSpinner v-if="loading" />
+          <span v-else>Load More Rooms</span>
+        </button>
+      </div>
     </div>
   </BookingProcessLayout>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { searchRooms } from '../services/api';
 import BookingProcessLayout from '../layouts/BookingProcessLayout.vue';
+import LoadingSpinner from '../components/LoadingSpinner.vue';
 
 const vObserveVisibility = {
-  beforeMount(el) {
-    el.classList.add('before-enter');
-  },
+  beforeMount(el) { el.classList.add('before-enter'); },
   mounted(el) {
-    const observer = new IntersectionObserver(
-        (entries) => {
-          if (entries[0].isIntersecting) {
-            el.classList.add('enter');
-            observer.unobserve(el);
-          }
-        },
-        {threshold: 0.1}
-    );
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        el.classList.add('enter');
+        observer.unobserve(el);
+      }
+    }, { threshold: 0.1 });
     observer.observe(el);
   },
 };
@@ -80,8 +83,11 @@ const route = useRoute();
 const router = useRouter();
 
 const rooms = ref([]);
-const loading = ref(true);
+const loading = ref(false);
 const sortBy = ref('lowest');
+const lastVisibleDoc = ref(null);
+const hasMore = ref(true);
+const roomsPerPage = 5;
 
 const guests = computed(() => route.query.guests || 1);
 const checkIn = computed(() => route.query.checkIn);
@@ -97,39 +103,57 @@ const nights = computed(() => {
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
-  const options = {year: 'numeric', month: 'short', day: 'numeric'};
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
   return new Date(dateString).toLocaleDateString('en-SG', options).toUpperCase();
 };
 
 const formattedCheckIn = computed(() => formatDate(checkIn.value));
 const formattedCheckOut = computed(() => formatDate(checkOut.value));
 
-const sortedRooms = computed(() => {
-  return [...rooms.value].sort((a, b) => {
-    if (sortBy.value === 'highest') {
-      return b.price - a.price;
-    }
-    return a.price - b.price;
-  });
-});
-
-onMounted(async () => {
+// **FIX**: This function now resets the list and fetches the first page.
+const fetchAndResetRooms = async () => {
+  loading.value = true;
+  hasMore.value = true;
+  lastVisibleDoc.value = null;
   try {
-    const searchParams = {
-      guests: guests.value,
-      checkIn: checkIn.value,
-      checkOut: checkOut.value,
-    };
-    rooms.value = await searchRooms(searchParams);
+    const { roomList, lastVisibleDoc: newLastVisible } = await searchRooms(null, roomsPerPage, sortBy.value);
+    rooms.value = roomList; // Replace the list, don't add to it
+    lastVisibleDoc.value = newLastVisible;
+    if (roomList.length < roomsPerPage) {
+      hasMore.value = false;
+    }
   } catch (error) {
     console.error("Failed to fetch rooms:", error);
   } finally {
     loading.value = false;
   }
-});
+};
+
+const loadMoreRooms = async () => {
+  if (loading.value || !hasMore.value) return;
+  loading.value = true;
+  try {
+    const { roomList, lastVisibleDoc: newLastVisible } = await searchRooms(lastVisibleDoc.value, roomsPerPage, sortBy.value);
+    rooms.value.push(...roomList);
+    lastVisibleDoc.value = newLastVisible;
+    if (!newLastVisible || roomList.length < roomsPerPage) {
+      hasMore.value = false;
+    }
+  } catch (error) {
+    console.error("Failed to fetch more rooms:", error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// **FIX**: Watch for changes in the sortBy filter
+watch(sortBy, fetchAndResetRooms);
+
+// **FIX**: Call the new reset function on mount
+onMounted(fetchAndResetRooms);
 
 const selectRoom = (roomId) => {
-  router.push({name: 'ContactInfo', query: {...route.query, roomId}});
+  router.push({ name: 'ContactInfo', query: { ...route.query, roomId } });
 };
 </script>
 
@@ -169,7 +193,7 @@ const selectRoom = (roomId) => {
 .sort-options select {
   padding: 0.5rem;
   font-weight: bold;
-  height: auto; /* Override global height for this smaller select */
+  height: auto;
 }
 
 .room-list {
@@ -275,6 +299,36 @@ const selectRoom = (roomId) => {
   padding: 3rem;
   font-size: 1.2rem;
   color: #888;
+}
+
+.pagination-controls {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.load-more-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  min-width: 200px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.load-more-button:hover:not(:disabled) {
+  background-color: var(--primary-color-dark);
+}
+
+.load-more-button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
 }
 
 @media (max-width: 992px) {

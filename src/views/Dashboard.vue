@@ -25,13 +25,21 @@
 
       <div v-if="!loading && !error">
         <!-- Upcoming Bookings -->
-        <div v-show="activeTab === 'upcoming'">
+        <div v-if="activeTab === 'upcoming'">
           <div v-if="upcomingBookings.length === 0" class="no-bookings-message">
             You have no upcoming bookings.
             <router-link to="/search" class="button-link">Book a Room</router-link>
           </div>
-          <div v-else class="booking-list">
-            <div v-for="booking in upcomingBookings" :key="booking.bookingId" class="booking-card">
+          <TransitionGroup v-else tag="div" name="booking-list-transition" class="booking-list">
+            <div
+              v-for="booking in upcomingBookings"
+              :key="booking.bookingId"
+              class="booking-card"
+              v-observe-visibility
+            >
+              <div class="booking-image-wrapper">
+                <img :src="booking.roomImage" :alt="booking.roomTitle" class="booking-image" />
+              </div>
               <div class="booking-details">
                 <h3>{{ booking.roomTitle }}</h3>
                 <p><strong>Check-in:</strong> {{ formatDate(booking.checkIn) }}</p>
@@ -49,16 +57,24 @@
                 </button>
               </div>
             </div>
-          </div>
+          </TransitionGroup>
         </div>
 
         <!-- Past Bookings -->
-        <div v-show="activeTab === 'past'">
+        <div v-if="activeTab === 'past'">
           <div v-if="pastBookings.length === 0" class="no-bookings-message">
             You have no past bookings.
           </div>
-          <div v-else class="booking-list">
-            <div v-for="booking in pastBookings" :key="booking.bookingId" class="booking-card past">
+          <TransitionGroup v-else tag="div" name="booking-list-transition" class="booking-list">
+            <div
+              v-for="booking in pastBookings"
+              :key="booking.bookingId"
+              class="booking-card past"
+              v-observe-visibility
+            >
+              <div class="booking-image-wrapper">
+                <img :src="booking.roomImage" :alt="booking.roomTitle" class="booking-image" />
+              </div>
               <div class="booking-details">
                 <h3>{{ booking.roomTitle }}</h3>
                 <p><strong>Check-in:</strong> {{ formatDate(booking.checkIn) }}</p>
@@ -67,7 +83,7 @@
                 <p v-if="booking.status === 'cancelled'" class="status-tag cancelled">Cancelled</p>
               </div>
             </div>
-          </div>
+          </TransitionGroup>
         </div>
       </div>
     </div>
@@ -79,6 +95,24 @@ import { ref, onMounted, computed } from 'vue';
 import { getUserBookings, cancelBooking } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner.vue';
 import { useToast } from '../composables/useToast';
+
+const vObserveVisibility = {
+  beforeMount(el) {
+    el.classList.add('before-enter');
+  },
+  mounted(el) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          el.classList.add('enter');
+          observer.unobserve(el);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+  },
+};
 
 const { showToast } = useToast();
 const allBookings = ref([]);
@@ -209,6 +243,25 @@ onMounted(fetchBookings);
   border: 1px solid var(--border-color);
 }
 
+.booking-image-wrapper {
+  width: 150px;
+  height: 100px;
+  flex-shrink: 0;
+  margin-right: 1.5rem;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.booking-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.booking-details {
+  flex-grow: 1;
+}
+
 .booking-card.past {
   background-color: #f9f9f9;
   color: #888;
@@ -249,11 +302,44 @@ onMounted(fetchBookings);
   margin-top: 1rem;
 }
 
+.before-enter {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.5s ease-out;
+}
+.enter {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.booking-list-transition-leave-active {
+  transition: all 0.4s ease;
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.booking-list-transition-enter-active {
+  transition: all 0.4s ease;
+  transition-delay: 0.4s;
+}
+
+.booking-list-transition-enter-from {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+
 @media (max-width: 768px) {
   .booking-card {
     flex-direction: column;
     align-items: flex-start;
     gap: 1rem;
+  }
+  .booking-image-wrapper {
+    width: 100%;
+    height: 150px;
+    margin-right: 0;
+    margin-bottom: 1rem;
   }
   .booking-actions {
     width: 100%;
