@@ -23,7 +23,6 @@
           </div>
         </div>
 
-        <!-- This is the new single container for details -->
         <div class="details-wrapper">
           <div class="package-column">
             <div class="room-info">
@@ -68,9 +67,9 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { createBooking } from '../services/api';
+// **FIX**: Import both functions at the top level for reliability.
+import { createBooking, getRoomDetails } from '../services/api';
 import BookingProcessLayout from '../layouts/BookingProcessLayout.vue';
-// GuestDetailsCard is no longer needed
 
 const route = useRoute();
 
@@ -98,7 +97,6 @@ const formatDate = (dateString) => {
 const formattedCheckIn = computed(() => formatDate(checkIn));
 const formattedCheckOut = computed(() => formatDate(checkOut));
 
-// Re-calculate price for display, as total is already in response
 const roomCharge = computed(() => bookingResponse.value ? bookingResponse.value.totalPrice / 1.09 : 0);
 const taxAndServiceCharge = computed(() => roomCharge.value * 0.09);
 
@@ -117,16 +115,18 @@ onMounted(async () => {
       },
     };
 
+    // Call the API to create the booking
     const response = await createBooking(bookingDetails);
 
-    const { getRoomDetails } = await import('../services/api.js');
+    // **FIX**: Use the pre-imported getRoomDetails function.
+    // The dynamic import was causing the error.
     const roomDetails = await getRoomDetails(roomId);
 
     bookingResponse.value = {
-      ...response,
-      roomTitle: roomDetails.title,
-      roomImage: roomDetails.image,
-      totalPrice: roomDetails.price * nights.value * 1.09
+        ...response,
+        roomTitle: roomDetails.title,
+        roomImage: roomDetails.image,
+        totalPrice: roomDetails.price * nights.value * 1.09
     };
 
   } catch (err) {
@@ -148,7 +148,7 @@ onMounted(async () => {
   padding: 4rem 1rem;
 }
 .status-message.error {
-  color: #d9534f;
+  color: var(--danger-color);
 }
 
 .confirmation-header {
@@ -205,10 +205,10 @@ onMounted(async () => {
 }
 
 .room-image {
-  width: 170px; /* Smaller image */
-  height: 105px;
-  object-fit: cover;
-  flex-shrink: 0;
+    width: 170px; /* Smaller image */
+    height: 105px;
+    object-fit: cover;
+    flex-shrink: 0;
 }
 
 .room-title-section h3 {

@@ -1,0 +1,23 @@
+[
+  {
+    "id": "deluxe-101",
+    "title": "Deluxe Queen Room",
+    "description": "A spacious 40sqm room with a queen-sized bed, perfect for couples. Enjoy stunning city views and a modern, elegant design.",
+    "price": 280,
+    "image": "https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=2070&auto=format&fit=crop"
+  },
+  {
+    "id": "suite-202",
+    "title": "Executive King Suite",
+    "description": "Experience luxury in our 70sqm suite, featuring a separate living area and a plush king-sized bed. Includes access to the executive lounge.",
+    "price": 450,
+    "image": "https://images.unsplash.com/photo-1560200353-ce0a76b1d425?q=80&w=2146&auto=format&fit=crop"
+  },
+  {
+    "id": "family-303",
+    "title": "Family Room with Two Double Beds",
+    "description": "Ideal for families, this 55sqm room offers two double beds, a comfortable seating area, and plenty of space for everyone.",
+    "price": 360,
+    "image": "https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974&auto=format&fit=crop"
+  }
+]

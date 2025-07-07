@@ -4,6 +4,7 @@
       <div class="contact-form-container">
         <h2 class="form-title">CONTACT INFORMATION</h2>
         <Form
+          v-if="initialContactValues"
           @submit="proceedToConfirmation"
           :validation-schema="schema"
           :initial-values="initialContactValues"
@@ -33,6 +34,7 @@
 
           <button type="submit" class="proceed-button">PROCEED</button>
         </Form>
+        <div v-else class="loading-form">Loading your details...</div>
       </div>
 
       <BookingSummaryCard
@@ -47,28 +49,25 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Form, Field, ErrorMessage } from 'vee-validate';
 import * as yup from 'yup';
+import { auth } from '../firebaseConfig';
+import { getUserProfile } from '../services/api';
 import BookingProcessLayout from '../layouts/BookingProcessLayout.vue';
 import BookingSummaryCard from '../components/BookingSummaryCard.vue';
 
 const route = useRoute();
 const router = useRouter();
 
+const initialContactValues = ref(null);
+
 // Extract data from route query
 const roomId = computed(() => route.query.roomId);
 const checkIn = computed(() => route.query.checkIn);
 const checkOut = computed(() => route.query.checkOut);
 const guests = computed(() => route.query.guests);
-
-// This ensures data persists when navigating back to this step.
-const initialContactValues = {
-  title: route.query.contactTitle || 'Mr.',
-  name: route.query.contactName || '',
-  email: route.query.contactEmail || '',
-};
 
 // Validation schema for the form
 const schema = yup.object({
@@ -77,8 +76,32 @@ const schema = yup.object({
   email: yup.string().required('Email is required').email('Must be a valid email'),
 });
 
+onMounted(async () => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+        // If user is logged in, try to fetch their profile
+        const userProfile = await getUserProfile(currentUser.uid);
+        if (userProfile) {
+            initialContactValues.value = {
+                title: userProfile.title || 'Mr.',
+                name: userProfile.name || '',
+                email: userProfile.email || currentUser.email,
+            };
+        } else {
+             // If no profile exists, pre-fill with their auth email
+            initialContactValues.value = { title: 'Mr.', name: '', email: currentUser.email };
+        }
+    } else {
+        // If user is not logged in, use query params or defaults
+        initialContactValues.value = {
+            title: route.query.contactTitle || 'Mr.',
+            name: route.query.contactName || '',
+            email: route.query.contactEmail || '',
+        };
+    }
+});
+
 const proceedToConfirmation = (values) => {
-  // Pass all accumulated data to the final confirmation page via query params
   router.push({
     name: 'Confirmation',
     query: {
@@ -97,13 +120,11 @@ const proceedToConfirmation = (values) => {
   gap: 2rem;
   align-items: flex-start;
 }
-
 .contact-form-container {
   flex-grow: 1;
   padding: 1.5rem;
   background-color: var(--light-gray);
 }
-
 .form-title {
   font-family: var(--font-serif),serif;
   font-size: 1.5rem;
@@ -112,23 +133,19 @@ const proceedToConfirmation = (values) => {
   padding-bottom: 0.5rem;
   display: inline-block;
 }
-
 .contact-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
-
 .form-group {
   display: flex;
   flex-direction: column;
 }
-
 .form-group label {
   margin-bottom: 0.5rem;
   font-weight: bold;
 }
-
 .form-group input,
 .form-group select {
   padding: 0.75rem;
@@ -136,13 +153,11 @@ const proceedToConfirmation = (values) => {
   background-color: white;
   font-size: 1rem;
 }
-
 .error-message {
-  color: #d9534f;
+  color: var(--danger-color);
   font-size: 0.875rem;
   margin-top: 0.25rem;
 }
-
 .proceed-button {
   background-color: var(--primary-color);
   color: white;
@@ -154,11 +169,14 @@ const proceedToConfirmation = (values) => {
   align-self: flex-start;
   transition: background-color 0.2s ease;
 }
-
 .proceed-button:hover {
-  background-color: #333;
+  background-color: var(--primary-color-dark);
 }
-
+.loading-form {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+}
 @media (max-width: 992px) {
   .contact-page-wrapper {
     flex-direction: column-reverse;

@@ -6,8 +6,6 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  // Update the base path for GitHub Pages deployment
-  base: '/vue-booking-app/',
   plugins: [
     vue(),
     vueDevTools(),
