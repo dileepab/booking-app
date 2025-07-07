@@ -6,29 +6,42 @@
     </div>
     <Form @submit="handleRegister" :validation-schema="schema" v-slot="{ meta }">
       <div class="form-grid-layout">
-        <!-- User ID Row -->
-        <label for="userId" class="form-label">User ID*</label>
+        <label for="email" class="form-label">Email*</label>
         <div class="input-wrapper">
-          <Field name="userId" type="text" id="userId" />
-          <ErrorMessage name="userId" class="error-message" />
+          <Field name="email" type="email" id="email" />
+          <ErrorMessage name="email" class="error-message" />
         </div>
 
-        <!-- Password Row -->
         <label for="password" class="form-label">Password*</label>
         <div class="input-wrapper">
-          <Field name="password" type="password" id="password" />
+          <Field name="password" v-slot="{ value, handleChange }">
+            <PasswordInput
+              id="password"
+              name="password"
+              :modelValue="value"
+              @update:modelValue="handleChange"
+            />
+          </Field>
           <ErrorMessage name="password" class="error-message" />
         </div>
 
-        <!-- Confirm Password Row -->
         <label for="confirmPassword" class="form-label">Confirm Password*</label>
         <div class="input-wrapper">
-          <Field name="confirmPassword" type="password" id="confirmPassword" />
+          <Field name="confirmPassword" v-slot="{ value, handleChange }">
+            <PasswordInput
+              id="confirmPassword"
+              name="confirmPassword"
+              :modelValue="value"
+              @update:modelValue="handleChange"
+            />
+          </Field>
           <ErrorMessage name="confirmPassword" class="error-message" />
         </div>
 
         <div /> <!-- Empty cell for alignment -->
-        <button type="submit" class="auth-button" :disabled="!meta.valid">REGISTER</button>
+        <div class="auth-button-wrapper">
+            <button type="submit" class="auth-button" :disabled="!meta.valid">REGISTER</button>
+        </div>
       </div>
 
       <div class="form-link">
@@ -42,22 +55,32 @@
 import { useRouter } from 'vue-router';
 import { Form, Field, ErrorMessage } from 'vee-validate';
 import * as yup from 'yup';
+import { registerUser } from '../services/api';
+import PasswordInput from '../components/PasswordInput.vue'; // Import the new component
 
 const router = useRouter();
 
 const schema = yup.object({
-  userId: yup.string().required('User ID is required'),
+  email: yup.string().required('Email is required').email('Must be a valid email'),
   password: yup.string().required('Password is required').min(8, 'Password must be at least 8 characters'),
   confirmPassword: yup.string()
-      .required('Please confirm your password')
-      .oneOf([yup.ref('password')], 'Your passwords do not match.'),
+    .required('Please confirm your password')
+    .oneOf([yup.ref('password')], 'Your passwords do not match.'),
 });
 
 const handleRegister = async (values) => {
-  console.log("Registering user:", values);
-  // In a real app, you would call your registration API here.
-  // We'll simulate a success.
-  alert('Registration successful! Redirecting to login...');
-  router.push('/login');
+  try {
+    await registerUser(values.email, values.password);
+    alert('Registration successful! Please log in.');
+    router.push('/login');
+  } catch (error) {
+    let errorMessage = 'An unknown error occurred.';
+    if (error.code === 'auth/email-already-in-use') {
+      errorMessage = 'This email address is already in use.';
+    } else {
+      errorMessage = 'Failed to register. Please try again later.';
+    }
+    alert(errorMessage);
+  }
 };
 </script>
