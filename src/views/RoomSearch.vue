@@ -9,24 +9,27 @@
 
     <div class="search-form-wrapper">
       <form @submit.prevent="executeSearch" class="search-form">
-        <div class="form-group">
-          <label for="guests">Guests</label>
-          <select id="guests" v-model="searchCriteria.guests">
-            <option value="1">1 Guest</option>
-            <option value="2">2 Guests</option>
-            <option value="3">3 Guests</option>
-            <option value="4">4 Guests</option>
-          </select>
+        <div class="form-inputs">
+          <div class="form-group">
+            <label for="guests">Guests</label>
+            <div class="select-wrapper">
+              <select id="guests" v-model="searchCriteria.guests">
+                <option value="1">1 Guest</option>
+                <option value="2">2 Guests</option>
+                <option value="3">3 Guests</option>
+                <option value="4">4 Guests</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="checkin">Check-in</label>
+            <input type="date" id="checkin" v-model="searchCriteria.checkIn" :min="today" />
+          </div>
+          <div class="form-group">
+            <label for="checkout">Check-out</label>
+            <input type="date" id="checkout" v-model="searchCriteria.checkOut" :min="checkoutMinDate" />
+          </div>
         </div>
-        <div class="form-group">
-          <label for="checkin">Check-in</label>
-          <input type="date" id="checkin" v-model="searchCriteria.checkIn" :min="today" />
-        </div>
-        <div class="form-group">
-          <label for="checkout">Check-out</label>
-          <input type="date" id="checkout" v-model="searchCriteria.checkOut" :min="checkoutMinDate" />
-        </div>
-        <!-- The button is now a direct child of the form for better alignment -->
         <button type="submit" class="search-button">SEARCH FOR ROOMS</button>
       </form>
     </div>
@@ -40,7 +43,6 @@ import { useRouter, useRoute } from 'vue-router';
 const router = useRouter();
 const route = useRoute();
 
-// Create a timezone-safe function to format a date to<y_bin_564>-MM-DD
 const formatDateToYYYYMMDD = (date) => {
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -48,11 +50,9 @@ const formatDateToYYYYMMDD = (date) => {
   return `${year}-${month}-${day}`;
 };
 
-// Get today's date using the local timezone
 const todayDate = new Date();
 const today = formatDateToYYYYMMDD(todayDate);
 
-// Calculate tomorrow's date based on a given date string
 const getTomorrow = (dateStr) => {
   const [year, month, day] = dateStr.split('-').map(Number);
   const date = new Date(year, month - 1, day);
@@ -66,12 +66,10 @@ const searchCriteria = reactive({
   checkOut: route.query.checkOut || getTomorrow(today),
 });
 
-// The minimum selectable date for the checkout input
 const checkoutMinDate = computed(() => {
   return getTomorrow(searchCriteria.checkIn);
 });
 
-// Watch for changes in the check-in date to auto-update the check-out date if needed
 watch(() => searchCriteria.checkIn, (newCheckIn) => {
   const checkInDate = new Date(newCheckIn);
   const checkOutDate = new Date(searchCriteria.checkOut);
@@ -106,9 +104,9 @@ const executeSearch = () => {
 
 .hero-image {
   width: 100%;
-  height: 400px; /* Set a fixed height */
+  height: 400px;
   display: block;
-  object-fit: cover; /* Ensures the image covers the area nicely */
+  object-fit: cover;
 }
 
 .hero-overlay {
@@ -133,7 +131,7 @@ const executeSearch = () => {
 .search-form-wrapper {
   background-color: #ffffff;
   padding: 2rem;
-  margin: -5rem auto 0 auto; /* Pulls the form up over the hero image */
+  margin: -5rem auto 0 auto;
   position: relative;
   z-index: 10;
   max-width: 900px;
@@ -143,8 +141,13 @@ const executeSearch = () => {
 
 .search-form {
   display: flex;
-  justify-content: space-between;
   align-items: flex-end;
+  gap: 1.5rem;
+}
+
+.form-inputs {
+  display: flex;
+  flex-grow: 1;
   gap: 1.5rem;
 }
 
@@ -162,25 +165,37 @@ const executeSearch = () => {
 
 .form-group input,
 .form-group select {
+  -webkit-appearance: none; /* Remove default iOS styling */
+  -moz-appearance: none;
+  appearance: none;
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--border-color);
   font-size: 1rem;
   border-radius: 4px;
+  background-color: var(--light-gray);
+  height: 48px;
+  box-sizing: border-box;
+  text-align: left;
+  color: var(--text-color);
+}
+
+.form-group input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
 }
 
 .search-button {
   background-color: var(--primary-color);
   color: white;
-  border: 1px solid transparent; /* Add transparent border to match input height */
+  border: 1px solid transparent;
   padding: 0.75rem 2rem;
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
   border-radius: 4px;
-  height: 47px;
   transition: background-color 0.2s ease;
-  flex-shrink: 0; /* Prevent the button from shrinking */
+  flex-shrink: 0;
+  height: 48px;
 }
 
 .search-button:hover {
@@ -191,6 +206,11 @@ const executeSearch = () => {
   .search-form {
     flex-direction: column;
     align-items: stretch;
+  }
+  .form-inputs,
+  .form-group select {
+    flex-direction: column;
+    gap: 1rem;
   }
 }
 </style>

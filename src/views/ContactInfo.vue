@@ -12,11 +12,13 @@
         >
           <div class="form-group">
             <label for="title">Title</label>
-            <Field name="title" as="select" id="title">
-              <option value="Mr.">Mr.</option>
-              <option value="Mrs.">Mrs.</option>
-              <option value="Ms.">Ms.</option>
-            </Field>
+            <div class="select-wrapper">
+              <Field name="title" as="select" id="title">
+                <option value="Mr.">Mr.</option>
+                <option value="Mrs.">Mrs.</option>
+                <option value="Ms.">Ms.</option>
+              </Field>
+            </div>
             <ErrorMessage name="title" class="error-message" />
           </div>
 
@@ -63,13 +65,11 @@ const router = useRouter();
 
 const initialContactValues = ref(null);
 
-// Extract data from route query
 const roomId = computed(() => route.query.roomId);
 const checkIn = computed(() => route.query.checkIn);
 const checkOut = computed(() => route.query.checkOut);
 const guests = computed(() => route.query.guests);
 
-// Validation schema for the form
 const schema = yup.object({
   title: yup.string().required('Title is required'),
   name: yup.string().required('Name is required'),
@@ -79,7 +79,6 @@ const schema = yup.object({
 onMounted(async () => {
     const currentUser = auth.currentUser;
     if (currentUser) {
-        // If user is logged in, try to fetch their profile
         const userProfile = await getUserProfile(currentUser.uid);
         if (userProfile) {
             initialContactValues.value = {
@@ -88,11 +87,9 @@ onMounted(async () => {
                 email: userProfile.email || currentUser.email,
             };
         } else {
-             // If no profile exists, pre-fill with their auth email
             initialContactValues.value = { title: 'Mr.', name: '', email: currentUser.email };
         }
     } else {
-        // If user is not logged in, use query params or defaults
         initialContactValues.value = {
             title: route.query.contactTitle || 'Mr.',
             name: route.query.contactName || '',
@@ -180,6 +177,19 @@ const proceedToConfirmation = (values) => {
 @media (max-width: 992px) {
   .contact-page-wrapper {
     flex-direction: column-reverse;
+  }
+  .summary-card, .contact-form-container {
+    width: 100%;
+  }
+  .proceed-button,
+  .form-group input,
+  .form-group select {
+    width: 100%;
+  }
+}
+@media (max-width: 768px) {
+  .contact-form-container {
+    padding: 1.5rem 1rem;
   }
 }
 </style>
