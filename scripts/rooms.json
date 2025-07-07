@@ -1,23 +1,23 @@
 [
-  {
-    "id": "deluxe-101",
-    "title": "Deluxe Queen Room",
-    "description": "A spacious 40sqm room with a queen-sized bed, perfect for couples. Enjoy stunning city views and a modern, elegant design.",
-    "price": 280,
-    "image": "https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=2070&auto=format&fit=crop"
-  },
-  {
-    "id": "suite-202",
-    "title": "Executive King Suite",
-    "description": "Experience luxury in our 70sqm suite, featuring a separate living area and a plush king-sized bed. Includes access to the executive lounge.",
-    "price": 450,
-    "image": "https://images.unsplash.com/photo-1560200353-ce0a76b1d425?q=80&w=2146&auto=format&fit=crop"
-  },
-  {
-    "id": "family-303",
-    "title": "Family Room with Two Double Beds",
-    "description": "Ideal for families, this 55sqm room offers two double beds, a comfortable seating area, and plenty of space for everyone.",
-    "price": 360,
-    "image": "https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974&auto=format&fit=crop"
-  }
+  { "id": "std-queen-101", "title": "Standard Queen Room", "description": "A cozy 25sqm room with a comfortable queen-sized bed. Perfect for solo travelers or couples.", "price": 180, "image": "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?q=80&w=2070&auto=format&fit=crop" },
+  { "id": "deluxe-queen-102", "title": "Deluxe Queen Room", "description": "A spacious 40sqm room with a queen-sized bed, perfect for couples. Enjoy stunning city views.", "price": 280, "image": "https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=2070&auto=format&fit=crop" },
+  { "id": "std-king-103", "title": "Standard King Room", "description": "A well-appointed 30sqm room featuring a plush king-sized bed and modern amenities.", "price": 220, "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=2070&auto=format&fit=crop" },
+  { "id": "deluxe-king-201", "title": "Deluxe King with Balcony", "description": "Enjoy the extra space and a private balcony in this 45sqm room with a king-sized bed.", "price": 320, "image": "https://images.unsplash.com/photo-1568495248636-6432b97bd949?q=80&w=1974&auto=format&fit=crop" },
+  { "id": "exec-suite-202", "title": "Executive King Suite", "description": "Experience luxury in our 70sqm suite, featuring a separate living area and executive lounge access.", "price": 450, "image": "https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=2070&auto=format&fit=crop" },
+  { "id": "family-room-301", "title": "Family Room with Two Double Beds", "description": "Ideal for families, this 55sqm room offers two double beds and a comfortable seating area.", "price": 360, "image": "https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=1974&auto=format&fit=crop" },
+  { "id": "corner-king-302", "title": "Corner King with Panoramic View", "description": "This 50sqm room offers stunning panoramic city views from its corner location.", "price": 380, "image": "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?q=80&w=2070&auto=format&fit=crop" },
+  { "id": "twin-room-401", "title": "Superior Twin Room", "description": "Perfect for friends or colleagues, this room features two comfortable single beds.", "price": 200, "image": "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=2070&auto=format&fit=crop" },
+  { "id": "junior-suite-402", "title": "Junior Suite", "description": "A stylish 60sqm open-plan suite with a king bed and a spacious seating area.", "price": 400, "image": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2" },
+  { "id": "accessible-room-104", "title": "Accessible Queen Room", "description": "This room is designed for guests with additional accessibility needs, featuring wider doorways and a roll-in shower.", "price": 190, "image": "https://images.unsplash.com/photo-1582719508461-905c673771fd?q=80&w=1925&auto=format&fit=crop" },
+  { "id": "penthouse-suite-501", "title": "The Penthouse Suite", "description": "The pinnacle of luxury. A 150sqm suite with a private terrace, dining area, and personalized butler service.", "price": 1200, "image": "https://imageio.forbes.com/specials-images/imageserve/652f603a91415a3d647fc207/0x0.jpg?fit=bounds&format=jpg&height=900&width=1600" },
+  { "id": "studio-king-502", "title": "Studio King", "description": "A modern 35sqm studio layout with a king bed and a convenient kitchenette.", "price": 250, "image": "https://plus.unsplash.com/premium_photo-1663126637580-ff22a73f9bfc?fm=jpg&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG90ZWwlMjBiZWRyb29tfGVufDB8fDB8fHww&ixlib=rb-4.1.0&q=60&w=3000" },
+  { "id": "city-view-queen-601", "title": "City View Queen", "description": "A comfortable room on a high floor offering spectacular views of the city skyline.", "price": 290, "image": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?q=80&w=2071&auto=format&fit=crop" },
+  { "id": "garden-view-twin-602", "title": "Garden View Twin", "description": "A peaceful room overlooking our serene internal gardens, with two single beds.", "price": 210, "image": "https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=2057&auto=format&fit=crop" },
+  { "id": "loft-suite-701", "title": "Two-Story Loft Suite", "description": "A unique two-level suite with a bedroom on the mezzanine and a living area below.", "price": 550, "image": "https://www.hotelslon.com/upld/xl/24/economy-room.jpg" },
+  { "id": "wellness-suite-702", "title": "Wellness Suite", "description": "Focus on your well-being in this suite, equipped with a yoga mat, air purifier, and spa-like bathroom.", "price": 480, "image": "https://hotelgarden-ks.com/wp-content/uploads/2020/09/economy-single-room-gallery-1.jpg" },
+  { "id": "connecting-room-a-801", "title": "Connecting Room (King)", "description": "Part of a connecting pair, this room has a king bed and can be booked with its twin counterpart.", "price": 230, "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c" },
+  { "id": "connecting-room-b-802", "title": "Connecting Room (Twin)", "description": "Part of a connecting pair, this room has two single beds and is ideal for family groups.", "price": 230, "image": "https://images.wsj.net/im-90470461?height=466&width=700" },
+  { "id": "grand-suite-901", "title": "Grand Presidential Suite", "description": "Our most opulent accommodation, offering unparalleled luxury, space, and service.", "price": 2500, "image": "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?q=80&w=2069&auto=format&fit=crop" },
+  { "id": "economy-single-902", "title": "Economy Single", "description": "A compact and affordable room for the budget-conscious solo traveler.", "price": 150, "image": "https://www.sevenhillshotel.com/seven-hills-hotel-rooms/Economy-Rooms/Economy-Single/1.webp" },
+  { "id": "terrace-king-903", "title": "King Room with Terrace", "description": "A beautiful room featuring a large outdoor terrace for relaxing and dining.", "price": 350, "image": "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2" }
 ]
