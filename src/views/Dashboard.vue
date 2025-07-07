@@ -39,8 +39,13 @@
                 <p><strong>Booking ID:</strong> {{ booking.bookingId }}</p>
               </div>
               <div class="booking-actions">
-                <button @click="handleCancel(booking.bookingId)" class="cancel-button">
-                  Cancel Booking
+                <button
+                  @click="handleCancel(booking.bookingId)"
+                  class="cancel-button"
+                  :disabled="cancellingId === booking.bookingId"
+                >
+                  <LoadingSpinner v-if="cancellingId === booking.bookingId" />
+                  <span v-else>Cancel Booking</span>
                 </button>
               </div>
             </div>
@@ -72,18 +77,22 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import { getUserBookings, cancelBooking } from '../services/api';
+import LoadingSpinner from '../components/LoadingSpinner.vue';
+import { useToast } from '../composables/useToast';
 
+const { showToast } = useToast();
 const allBookings = ref([]);
 const loading = ref(true);
 const error = ref(null);
 const activeTab = ref('upcoming');
+const cancellingId = ref(null);
 
 const upcomingBookings = computed(() =>
-    allBookings.value.filter(b => b.status === 'upcoming').sort((a, b) => new Date(a.checkIn) - new Date(b.checkIn))
+  allBookings.value.filter(b => b.status === 'upcoming').sort((a, b) => new Date(a.checkIn) - new Date(b.checkIn))
 );
 
 const pastBookings = computed(() =>
-    allBookings.value.filter(b => b.status !== 'upcoming').sort((a, b) => new Date(b.checkIn) - new Date(a.checkIn))
+  allBookings.value.filter(b => b.status !== 'upcoming').sort((a, b) => new Date(b.checkIn) - new Date(a.checkIn))
 );
 
 const formatDate = (dateString) => {
@@ -105,20 +114,19 @@ const fetchBookings = async () => {
 };
 
 const handleCancel = async (bookingId) => {
-  // Optimistic UI update
-  const bookingToCancel = allBookings.value.find(b => b.bookingId === bookingId);
-  if (bookingToCancel) {
-    bookingToCancel.status = 'cancelled';
-  }
-
+  cancellingId.value = bookingId;
   try {
     await cancelBooking(bookingId);
-    // If API call fails, you might want to revert the status, but for this mock, we assume success.
+    const bookingToCancel = allBookings.value.find(b => b.bookingId === bookingId);
+    if (bookingToCancel) {
+      bookingToCancel.status = 'cancelled';
+    }
+    showToast('Booking cancelled successfully.', 'success');
   } catch (err) {
     console.error('Failed to cancel booking:', err);
-    // Revert UI change on error
-    if (bookingToCancel) bookingToCancel.status = 'upcoming';
-    alert('Could not cancel the booking. Please try again.');
+    showToast('Could not cancel the booking. Please try again.', 'error');
+  } finally {
+    cancellingId.value = null;
   }
 };
 
@@ -154,7 +162,7 @@ onMounted(fetchBookings);
   font-weight: 500;
   color: #666;
   border-bottom: 3px solid transparent;
-  margin-bottom: -1px; /* Aligns with the container's border */
+  margin-bottom: -1px;
 }
 
 .tab-button.active {
@@ -222,9 +230,17 @@ onMounted(fetchBookings);
   cursor: pointer;
   font-weight: bold;
   transition: background-color 0.2s;
+  min-width: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-.cancel-button:hover {
+.cancel-button:hover:not(:disabled) {
   background-color: var(--danger-color-dark);
+}
+.cancel-button:disabled {
+  background-color: #f8d7da;
+  cursor: not-allowed;
 }
 
 .status-tag.cancelled {

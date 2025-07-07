@@ -257,5 +257,9 @@ onMounted(async () => {
   .details-wrapper {
     flex-direction: column;
   }
+  .confirmation-header{
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 }
 </style>

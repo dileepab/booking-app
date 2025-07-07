@@ -43,9 +43,11 @@ import { useRouter } from 'vue-router';
 import { Form, Field, ErrorMessage } from 'vee-validate';
 import * as yup from 'yup';
 import { loginUser } from '../services/api';
-import PasswordInput from '../components/PasswordInput.vue'; // Import the new component
+import PasswordInput from '../components/PasswordInput.vue';
+import { useToast } from '../composables/useToast';
 
 const router = useRouter();
+const { showToast } = useToast();
 
 const schema = yup.object({
   email: yup.string().required('Email is required').email('Must be a valid email'),
@@ -68,7 +70,7 @@ const handleLogin = async (values) => {
             errorMessage = 'Failed to log in. Please try again later.';
             break;
     }
-    alert(errorMessage);
+    showToast(errorMessage, 'error');
   }
 };
 </script>

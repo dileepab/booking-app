@@ -8,31 +8,46 @@
         </div>
         <div class="sort-options">
           <label for="sort-by">SORT BY:</label>
-          <select id="sort-by" v-model="sortBy">
-            <option value="lowest">LOWEST PRICE</option>
-            <option value="highest">HIGHEST PRICE</option>
-          </select>
+          <div class="select-wrapper">
+            <select id="sort-by" v-model="sortBy">
+              <option value="lowest">LOWEST PRICE</option>
+              <option value="highest">HIGHEST PRICE</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      <div class="room-list">
-        <div v-if="loading" class="loading-message">Searching for rooms...</div>
-        <div v-else-if="rooms.length === 0" class="no-rooms-message">No rooms available for the selected criteria.</div>
-        <div v-else v-for="room in sortedRooms" :key="room.id" class="room-card">
+      <div v-if="loading" class="status-message">Searching for rooms...</div>
+      <div v-else-if="!loading && rooms.length === 0" class="no-rooms-message">No rooms available for the selected criteria.</div>
+
+      <TransitionGroup
+          v-else
+          tag="div"
+          name="room-list-transition"
+          class="room-list"
+      >
+        <div
+            v-for="room in sortedRooms"
+            :key="room.id"
+            class="room-card"
+            v-observe-visibility
+        >
           <img :src="room.image" :alt="room.title" class="room-image" />
-          <div class="room-details">
-            <h3 class="room-title">{{ room.title }}</h3>
-            <p class="room-description">{{ room.description }}</p>
-          </div>
-          <div class="room-booking-details">
-            <p class="room-price">
-              S${{ room.price.toFixed(2) }}<span>/night</span>
-            </p>
-            <p class="price-info">Subject to GST and charges</p>
-            <button class="book-room-button" @click="selectRoom(room.id)">BOOK ROOM</button>
+          <div class="room-card-content">
+            <div class="room-details">
+              <h3 class="room-title">{{ room.title }}</h3>
+              <p class="room-description">{{ room.description }}</p>
+            </div>
+            <div class="room-booking-details">
+              <p class="room-price">
+                S${{ room.price.toFixed(2) }}<span>/night</span>
+              </p>
+              <p class="price-info">Subject to GST and charges</p>
+              <button class="book-room-button" @click="selectRoom(room.id)">BOOK ROOM</button>
+            </div>
           </div>
         </div>
-      </div>
+      </TransitionGroup>
     </div>
   </BookingProcessLayout>
 </template>
@@ -43,48 +58,61 @@ import { useRoute, useRouter } from 'vue-router';
 import { searchRooms } from '../services/api';
 import BookingProcessLayout from '../layouts/BookingProcessLayout.vue';
 
+const vObserveVisibility = {
+  beforeMount(el) {
+    el.classList.add('before-enter');
+  },
+  mounted(el) {
+    const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            el.classList.add('enter');
+            observer.unobserve(el);
+          }
+        },
+        {threshold: 0.1}
+    );
+    observer.observe(el);
+  },
+};
+
 const route = useRoute();
 const router = useRouter();
 
 const rooms = ref([]);
 const loading = ref(true);
-const sortBy = ref('lowest'); // Default sort option
+const sortBy = ref('lowest');
 
-// Extract search criteria from the route query
 const guests = computed(() => route.query.guests || 1);
 const checkIn = computed(() => route.query.checkIn);
 const checkOut = computed(() => route.query.checkOut);
 
-// Calculate the number of nights
 const nights = computed(() => {
   if (!checkIn.value || !checkOut.value) return 0;
   const start = new Date(checkIn.value);
   const end = new Date(checkOut.value);
   const diff = end.getTime() - start.getTime();
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  return Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
 });
 
-// Format dates for display
 const formatDate = (dateString) => {
   if (!dateString) return '';
-  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  const options = {year: 'numeric', month: 'short', day: 'numeric'};
   return new Date(dateString).toLocaleDateString('en-SG', options).toUpperCase();
 };
 
 const formattedCheckIn = computed(() => formatDate(checkIn.value));
 const formattedCheckOut = computed(() => formatDate(checkOut.value));
 
-// Sort rooms based on the selected option
 const sortedRooms = computed(() => {
   return [...rooms.value].sort((a, b) => {
     if (sortBy.value === 'highest') {
       return b.price - a.price;
     }
-    return a.price - b.price; // Default to lowest
+    return a.price - b.price;
   });
 });
 
-// Fetch rooms when the component is mounted
 onMounted(async () => {
   try {
     const searchParams = {
@@ -101,8 +129,7 @@ onMounted(async () => {
 });
 
 const selectRoom = (roomId) => {
-  // Navigate to the next step (Contact Information)
-  router.push({ name: 'ContactInfo', query: { ...route.query, roomId } });
+  router.push({name: 'ContactInfo', query: {...route.query, roomId}});
 };
 </script>
 
@@ -140,12 +167,13 @@ const selectRoom = (roomId) => {
 }
 
 .sort-options select {
-  border: 1px solid var(--border-color);
   padding: 0.5rem;
   font-weight: bold;
+  height: auto; /* Override global height for this smaller select */
 }
 
 .room-list {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -158,11 +186,31 @@ const selectRoom = (roomId) => {
   padding: 1.5rem;
 }
 
+.before-enter {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.5s ease-out;
+}
+.enter {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.room-list-transition-move {
+  transition: transform 0.6s cubic-bezier(0.55, 0, 0.1, 1);
+}
+
 .room-image {
   width: 340px;
   height: 210px;
   object-fit: cover;
   flex-shrink: 0;
+}
+
+.room-card-content {
+    display: flex;
+    flex-grow: 1;
+    gap: 2rem;
 }
 
 .room-details {
@@ -219,10 +267,10 @@ const selectRoom = (roomId) => {
 }
 
 .book-room-button:hover {
-  background-color: #333;
+  background-color: var(--primary-color-dark);
 }
 
-.loading-message, .no-rooms-message {
+.status-message, .no-rooms-message {
   text-align: center;
   padding: 3rem;
   font-size: 1.2rem;
@@ -237,21 +285,26 @@ const selectRoom = (roomId) => {
     width: 100%;
     height: auto;
   }
-  .room-booking-details {
-    width: 100%;
-    text-align: left;
-    margin-top: 1rem;
-  }
-  .book-room-button {
-    max-width: 250px;
-  }
 }
 
 @media (max-width: 768px) {
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      padding-right: 1rem;
+      padding-left: 1rem;
+    }
+    .room-card-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    .room-booking-details {
+        width: 100%;
+        text-align: left;
+    }
+    .book-room-button {
+        max-width: 100%;
+    }
 }
 </style>
